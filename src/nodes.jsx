@@ -1,4 +1,5 @@
 import SimpleComponent from "./components/SimpleComponent";
+import TextUpdaterNode from "./components/TextUpdaterNode";
 export default [
   {
     id: "1",
@@ -22,7 +23,14 @@ export default [
   {
     id: "3",
     type: "output",
-    data: { label: "Output Node" },
+    data: {
+      label: (
+        <div>
+          {" "}
+          <TextUpdaterNode />
+        </div>
+      ),
+    },
     position: { x: 250, y: 250 },
   },
 ];
