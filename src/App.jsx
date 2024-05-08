@@ -1,58 +1,72 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import ReactFlow, {
-  MiniMap,
-  Controls,
-  Background,
+  addEdge,
+  ReactFlowProvider,
   useNodesState,
   useEdgesState,
-  addEdge,
-  Panel,
 } from "reactflow";
-
 import "reactflow/dist/style.css";
 
-import TextUpdaterNode from "./components/TextUpdaterNode";
-import initialNodes from "./nodes";
-import initialEdges from "./edges";
+// Initial nodes setup
+const initialNodes = [
+  {
+    id: "1",
+    type: "default",
+    position: { x: 250, y: 5 },
+    data: { label: "Initial Node" },
+  },
+];
 
-const nodeTypes = { textUpdater: TextUpdaterNode };
+// Initial edges setup, if any
+const initialEdges = [];
 
-export default function App() {
+function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [variant, setVariant] = useState("cross");
-  console.log(edges);
 
-  const onConnect = useCallback(
-    (params) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  );
+  // Handler to add new node and edge
+  const onAddNode = () => {
+    const newNodeId = `${nodes.length + 1}`; // Generate a new ID based on length
+    const newNode = {
+      id: newNodeId,
+      type: "default",
+      position: {
+        x: Math.random() * 400, // Random position for demonstration
+        y: Math.random() * 400,
+      },
+      data: { label: `Node ${newNodeId}` },
+    };
 
-  const defaultEdgeOptions = { animated: true }; // задаємо дефолт для ліній зєднання
+    const newEdge = {
+      id: `e${newNodeId}-1`,
+      source: "1",
+      target: newNodeId,
+      animated: true,
+    };
 
+    setNodes((nds) => [...nds, newNode]); // Add new node
+    setEdges((eds) => [...eds, newEdge]); // Connect new node with the first one
+  };
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        nodeTypes={nodeTypes}
-        defaultEdgeOptions={defaultEdgeOptions}
-        panOnScroll
-        selectionOnDrag
-      >
-        <Background color="#ccc" variant={variant} />
-        <Panel>
-          <div>variant:</div>
-          <button onClick={() => setVariant("dots")}>dots</button>
-          <button onClick={() => setVariant("lines")}>lines</button>
-          <button onClick={() => setVariant("cross")}>cross</button>
-        </Panel>
-        <Controls />
-        <MiniMap />
-      </ReactFlow>
+      <ReactFlowProvider>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          fitView
+        >
+          <button
+            style={{ position: "absolute", right: 20, top: 10, zIndex: 100 }}
+            onClick={onAddNode}
+          >
+            Add Node
+          </button>
+        </ReactFlow>
+      </ReactFlowProvider>
     </div>
   );
 }
+
+export default App;
