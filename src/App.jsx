@@ -1,38 +1,60 @@
-import React, { useState } from "react";
+import React, { useCallback } from "react";
 import ReactFlow, {
   addEdge,
   ReactFlowProvider,
   useNodesState,
   useEdgesState,
+  Handle,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
-// Initial nodes setup
 const initialNodes = [
   {
     id: "1",
-    type: "default",
+    type: "customNode",
     position: { x: 250, y: 5 },
     data: { label: "Initial Node" },
   },
 ];
 
-// Initial edges setup, if any
 const initialEdges = [];
+
+function CustomNode({ id, data }) {
+  return (
+    <>
+      <Handle
+        type="target"
+        position="top"
+        id={`t-${id}`}
+        style={{ borderRadius: 0 }}
+      />
+      <div className="react-flow__node-default">{data.label}</div>
+      <Handle
+        type="source"
+        position="bottom"
+        id={`s-${id}`}
+        style={{ borderRadius: 0 }}
+      />
+    </>
+  );
+}
+
+const nodeTypes = {
+  customNode: CustomNode,
+};
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
-  // Handler to add new node and edge
-  const onAddNode = () => {
-    const newNodeId = `${nodes.length + 1}`; // Generate a new ID based on length
+  const onAddNode = useCallback(() => {
+    const newNodeId = `${nodes.length + 1}`;
     const newNode = {
       id: newNodeId,
-      type: "default",
+      type: "customNode",
       position: {
-        x: Math.random() * 400, // Random position for demonstration
-        y: Math.random() * 400,
+        x: Math.random() * window.innerWidth * 0.8,
+        y: Math.random() * window.innerHeight * 0.8,
       },
       data: { label: `Node ${newNodeId}` },
     };
@@ -40,13 +62,16 @@ function App() {
     const newEdge = {
       id: `e${newNodeId}-1`,
       source: "1",
+      sourceHandle: `s-1`, // Ensure this is the ID of the source handle
       target: newNodeId,
+      targetHandle: `t-${newNodeId}`, // Ensure this is the ID of the target handle
       animated: true,
     };
 
-    setNodes((nds) => [...nds, newNode]); // Add new node
-    setEdges((eds) => [...eds, newEdge]); // Connect new node with the first one
-  };
+    setNodes((nds) => [...nds, newNode]);
+    setEdges((eds) => addEdge(newEdge, eds));
+  }, [nodes.length, setNodes, setEdges]);
+
   return (
     <div style={{ width: "100vw", height: "100vh" }}>
       <ReactFlowProvider>
@@ -55,6 +80,7 @@ function App() {
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
           fitView
         >
           <button
